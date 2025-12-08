@@ -1,88 +1,206 @@
-import React, { useEffect, useState } from 'react';
-import PokemonCardForm from '../components/Pokemon/PokemonCardForm';
-import PokemonCardList from '../components/Pokemon/PokemonCardList';
+// src/pages/Home.jsx
+import React, { useState } from 'react';
 import { pokemonService } from '../services/pokemonService';
+import { POKEMON_SETS } from '../constants/pokemonSets';
 
 export default function Home() {
-  const [cards, setCards] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [filters, setFilters] = useState({
+    name: '',
+    setName: '',
+    rarity: '',
+  });
 
-  useEffect(() => {
-    async function loadCards() {
-      setLoading(true);
-      setError('');
-      try {
-        const data = await pokemonService.getMyCards();
-        setCards(data);
-      } catch (e) {
-        setError(e.message || 'Errore nel caricamento del wallet');
-      } finally {
-        setLoading(false);
-      }
-    }
+  const [results, setResults] = useState([]);
+  const [loadingSearch, setLoadingSearch] = useState(false);
+  const [errorSearch, setErrorSearch] = useState('');
+  const [savingId, setSavingId] = useState(null);
 
-    loadCards();
-  }, []);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
-  const handleAddCard = async (formData) => {
-    setError('');
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    setErrorSearch('');
+    setResults([]);
+
     try {
-      const newCard = await pokemonService.addCard(formData);
-      setCards((prev) => [...prev, newCard]);
-    } catch (e) {
-      setError(e.message || 'Errore nell’aggiunta della carta');
+      setLoadingSearch(true);
+      const data = await pokemonService.searchCards(filters, {
+        page: 1,
+        pageSize: 8,
+      });
+      setResults(data.cards || []);
+    } catch (err) {
+      setErrorSearch(err.message || 'Errore nella ricerca carte.');
+    } finally {
+      setLoadingSearch(false);
     }
   };
 
-  const handleDeleteCard = async (id) => {
-    setError('');
+  const handleAddToWallet = async (card) => {
+    setSavingId(card.externalId);
     try {
-      await pokemonService.deleteCard(id);
-      setCards((prev) => prev.filter((c) => c.id !== id));
-    } catch (e) {
-      setError(e.message || 'Errore nell’eliminazione della carta');
+      await pokemonService.addCard({
+        name: card.name,
+        setName: card.setName,
+        number: card.number,
+        rarity: card.rarity,
+        condition: '',
+        language: '',
+        estimatedMarketPrice: card.estimatedMarketPrice ?? null,
+        purchasePrice: null,
+        acquisitionDate: '',
+        location: '',
+        notes: '',
+        imageUrl: card.imageUrl,
+        externalId: card.externalId,
+        extraData: null,
+      });
+    } catch (err) {
+      alert(err.message || "Errore nell'aggiunta al wallet.");
+    } finally {
+      setSavingId(null);
     }
   };
 
   return (
     <div className="page">
-      <div>
-        <h2 className="page-title">Il tuo wallet di carte Pokémon</h2>
+      <header className="page-header">
+        <h2>Ricerca carte Pokémon</h2>
         <p className="page-subtitle">
-          Aggiungi le tue carte, tieni traccia del valore stimato e delle tue collezioni.
+          Cerca carte dal database ufficiale e aggiungile al tuo PokéWallet.
         </p>
-      </div>
+      </header>
 
       <div className="section-card">
-        <div className="section-header">
-          <div>
-            <h3 className="section-title">Aggiungi una carta</h3>
-            <p className="section-description">
-              Inserisci i dati principali; in futuro potremo collegare Cardmarket per arricchire i dettagli.
-            </p>
-          </div>
-        </div>
+        <h3 className="section-title">Filtri di ricerca</h3>
+        <p className="section-description">
+          Inserisci almeno il nome della carta. Puoi restringere la ricerca selezionando il set e/o la rarità.
+        </p>
 
-        <PokemonCardForm onSubmit={handleAddCard} />
+        <form className="form" onSubmit={handleSearch}>
+          {/* NOME CARTA */}
+          <div className="form-row">
+            <div className="form-field">
+              <span className="form-label">Nome carta *</span>
+              <input
+                name="name"
+                className="form-input"
+                value={filters.name}
+                onChange={handleChange}
+                placeholder="Es. Charizard, Pikachu, Solosis..."
+                required
+              />
+            </div>
+          </div>
+
+          {/* SET + RARITÀ */}
+          <div className="form-row">
+            <div className="form-field">
+              <span className="form-label">Set (opzionale)</span>
+              <select
+                name="setName"
+                className="form-input"
+                value={filters.setName}
+                onChange={handleChange}
+              >
+                <option value="">— Nessun filtro set —</option>
+                {POKEMON_SETS.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-field">
+              <span className="form-label">Rarità (opzionale)</span>
+              <input
+                name="rarity"
+                className="form-input"
+                value={filters.rarity}
+                onChange={handleChange}
+                placeholder="Es. Rare Holo, Rare, Uncommon..."
+              />
+            </div>
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={loadingSearch}
+            >
+              {loadingSearch ? 'Cerco...' : 'Cerca'}
+            </button>
+          </div>
+
+          {errorSearch && <p className="error-text">{errorSearch}</p>}
+        </form>
       </div>
 
-      <div className="section-card">
-        <div className="section-header">
-          <div>
-            <h3 className="section-title">Le tue carte</h3>
-            <p className="section-description">
-              Visualizza e gestisci il tuo portafoglio di carte Pokémon.
-            </p>
+      {/* RISULTATI */}
+      {results.length > 0 && (
+        <div className="section-card">
+          <h3 className="section-title">Risultati</h3>
+          <p className="section-description">
+            Clicca su &quot;Aggiungi al wallet&quot; per salvare una carta nella tua collezione.
+          </p>
+
+          <div className="pokemon-grid">
+            {results.map((card) => (
+              <div key={card.externalId} className="pokemon-card">
+                <div className="pokemon-card-header">
+                  <div>
+                    <h4 className="pokemon-card-title">{card.name}</h4>
+                    {card.setName && (
+                      <div className="pokemon-meta">
+                        Set: <strong>{card.setName}</strong>
+                        {card.number ? ` · #${card.number}` : ''}
+                      </div>
+                    )}
+                    {card.rarity && (
+                      <div className="pokemon-meta">Rarità: {card.rarity}</div>
+                    )}
+                    <div className="pokemon-price">
+                      Valore stimato:{' '}
+                      {card.estimatedMarketPrice != null
+                        ? `€ ${card.estimatedMarketPrice}`
+                        : 'N/D'}
+                    </div>
+                  </div>
+                </div>
+
+                {card.imageUrl && (
+                  <div className="pokemon-image-wrapper">
+                    <img
+                      src={card.imageUrl}
+                      alt={card.name}
+                      className="pokemon-image"
+                    />
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => handleAddToWallet(card)}
+                  disabled={savingId === card.externalId}
+                >
+                  {savingId === card.externalId
+                    ? 'Aggiungo...'
+                    : 'Aggiungi al wallet'}
+                </button>
+              </div>
+            ))}
           </div>
         </div>
-
-        {loading && <p className="loading-text">Caricamento in corso...</p>}
-        {error && <p className="error-text">{error}</p>}
-        {!loading && !error && (
-          <PokemonCardList cards={cards} onDelete={handleDeleteCard} />
-        )}
-      </div>
+      )}
     </div>
   );
 }

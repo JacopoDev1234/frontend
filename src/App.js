@@ -1,136 +1,76 @@
 // src/App.js
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   BrowserRouter as Router,
   Routes,
   Route,
-  Link,
   Navigate,
-  useLocation,
+  Link,
 } from 'react-router-dom';
-
 import Home from './pages/Home';
+import Wallet from './pages/Wallet';
+import About from './pages/About';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import { authService } from './services/authService';
-import './App.css';
 
-// Controlla autenticazione lato backend (token + /api/me)
-function RequireAuth({ children }) {
-  const location = useLocation();
-  const [status, setStatus] = useState('checking'); // 'checking' | 'ok' | 'no'
+function isAuthenticated() {
+  const token = localStorage.getItem('token');
+  return !!token;
+}
 
-  useEffect(() => {
-    async function checkAuth() {
-      if (!authService.isAuthenticated()) {
-        setStatus('no');
-        return;
-      }
-
-      try {
-        await authService.getCurrentUser();
-        setStatus('ok');
-      } catch (e) {
-        authService.logout();
-        setStatus('no');
-      }
-    }
-
-    checkAuth();
-  }, []);
-
-  if (status === 'checking') {
-    return <p className="loading-text">Verifica sessione...</p>;
+function ProtectedRoute({ children }) {
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" replace />;
   }
-
-  if (status === 'no') {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
   return children;
 }
 
-function AppInner() {
-  const [isAuth, setIsAuth] = useState(authService.isAuthenticated());
-
-  useEffect(() => {
-    const handleStorage = () => {
-      setIsAuth(authService.isAuthenticated());
-    };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
-  }, []);
+function AppLayout({ children }) {
+  const loggedIn = isAuthenticated();
 
   const handleLogout = () => {
-    authService.logout();
-    setIsAuth(false);
+    localStorage.removeItem('token');
     window.location.href = '/login';
   };
 
   return (
-    <div className="app">
+    <div className="app-root">
       <header className="app-header">
-        <div className="app-header-inner">
-          <div className="app-title">
-            <div className="app-title-logo" />
-            <div>
-              <div className="app-title-text">PokéWallet</div>
-              <div className="muted-text" style={{ fontSize: 11 }}>
-                Il tuo raccoglitore digitale di carte Pokémon
-              </div>
-            </div>
-          </div>
-
-          <nav className="app-nav">
-            {isAuth && (
-              <>
-                <Link to="/" className="app-nav-link">
-                  Home
-                </Link>
-                <button
-                  type="button"
-                  className="app-nav-link app-nav-link-primary"
-                  onClick={handleLogout}
-                >
-                  Logout
-                </button>
-              </>
-            )}
-
-            {!isAuth && (
-              <>
-                <Link to="/login" className="app-nav-link">
-                  Login
-                </Link>
-                <Link to="/register" className="app-nav-link app-nav-link-primary">
-                  Registrati
-                </Link>
-              </>
-            )}
-          </nav>
+        <div className="app-header-left">
+          <span className="app-logo">PokéWallet</span>
+          {loggedIn && (
+            <nav className="app-nav">
+              <Link to="/" className="app-nav-link">
+                Ricerca carte
+              </Link>
+              <Link to="/wallet" className="app-nav-link">
+                Il mio wallet
+              </Link>
+              <Link to="/about" className="app-nav-link">
+                About
+              </Link>
+            </nav>
+          )}
+        </div>
+        <div className="app-header-right">
+          {loggedIn ? (
+            <button className="btn btn-secondary" onClick={handleLogout}>
+              Logout
+            </button>
+          ) : (
+            <>
+              <Link to="/login" className="app-nav-link">
+                Login
+              </Link>
+              <Link to="/register" className="app-nav-link">
+                Register
+              </Link>
+            </>
+          )}
         </div>
       </header>
 
-      <main className="app-main">
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <RequireAuth>
-                <Home />
-              </RequireAuth>
-            }
-          />
-
-          <Route
-            path="/login"
-            element={<Login onLoginSuccess={() => setIsAuth(true)} />}
-          />
-          <Route path="/register" element={<Register />} />
-
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </main>
+      <main className="app-main">{children}</main>
     </div>
   );
 }
@@ -138,7 +78,62 @@ function AppInner() {
 export default function App() {
   return (
     <Router>
-      <AppInner />
+      <Routes>
+        {/* ROUTE PUBBLICHE */}
+        <Route
+          path="/login"
+          element={
+            <AppLayout>
+              <Login />
+            </AppLayout>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <AppLayout>
+              <Register />
+            </AppLayout>
+          }
+        />
+
+        {/* ROUTE PROTETTE */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Home />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/wallet"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Wallet />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/about"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <About />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </Router>
   );
 }
