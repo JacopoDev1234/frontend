@@ -1,47 +1,35 @@
-.app {
+/* src/App.css */
+
+/* Layout principale */
+.app-root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-/* HEADER / NAVBAR */
-
+/* HEADER */
 .app-header {
-  background: rgba(15, 23, 42, 0.95);
-  border-bottom: 1px solid var(--border-subtle);
-  backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
   z-index: 10;
-}
-
-.app-header-inner {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 12px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 12px 24px;
+  background: #020617;
+  border-bottom: 1px solid #1f2937;
 }
 
-.app-title {
+.app-header-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 24px;
 }
 
-.app-title-logo {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #facc15, #f97316 50%, #7c2d12);
-  box-shadow: 0 0 16px rgba(250, 204, 21, 0.65);
-}
-
-.app-title-text {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
+.app-logo {
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: #facc15;
 }
 
 .app-nav {
@@ -51,92 +39,83 @@
 }
 
 .app-nav-link {
-  font-size: 14px;
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: 999px;
-  border: 1px solid transparent;
-  color: var(--muted);
-  cursor: pointer;
-  background: transparent;
+  font-size: 0.95rem;
+  color: #e5e7eb;
+  background: #111827;
+  border: 1px solid #374151;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .app-nav-link:hover {
-  color: var(--text);
-  border-color: rgba(148, 163, 184, 0.5);
-  text-decoration: none;
+  background: #1f2937;
+  border-color: #4b5563;
 }
 
-.app-nav-link-primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent-soft));
-  color: #1f2937;
-  border-color: transparent;
-  font-weight: 600;
+.app-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.app-nav-link-primary:hover {
-  filter: brightness(1.05);
-}
-
-/* MAIN & PAGE LAYOUT */
-
+/* MAIN */
 .app-main {
   flex: 1;
-  max-width: 1080px;
+  max-width: 960px;
+  width: 100%;
   margin: 0 auto;
-  padding: 24px 20px 32px;
+  padding: 16px;
 }
 
+/* PAGINA */
 .page {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
-.page-title {
-  font-size: 24px;
-  margin: 0;
+/* HEADER DI PAGINA */
+.page-header {
+  margin-bottom: 4px;
+}
+
+.page-header h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 4px;
 }
 
 .page-subtitle {
-  font-size: 14px;
-  color: var(--muted);
-  margin: 0;
+  color: #9ca3af;
+  font-size: 0.95rem;
 }
 
-/* SECTION / CARD */
-
+/* CARD SEZIONE */
 .section-card {
-  background: rgba(15, 23, 42, 0.85);
-  border-radius: 14px;
-  padding: 18px 18px 20px;
-  border: 1px solid var(--border-subtle);
-  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.7);
-}
-
-.section-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 10px;
+  background: #020617;
+  border-radius: 12px;
+  border: 1px solid #1f2937;
+  padding: 16px;
 }
 
 .section-title {
-  font-size: 18px;
-  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
 }
 
 .section-description {
-  font-size: 12px;
-  color: var(--muted);
-  margin: 0;
+  color: #9ca3af;
+  font-size: 0.9rem;
 }
 
 /* FORM */
-
 .form {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-top: 8px;
 }
 
 .form-row {
@@ -147,24 +126,25 @@
 
 .form-field {
   flex: 1;
-  min-width: 150px;
+  min-width: 200px;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 13px;
 }
 
 .form-label {
-  color: var(--muted);
+  font-size: 0.85rem;
+  color: #d1d5db;
 }
 
 .form-input {
-  padding: 8px 10px;
+  background: #020617;
   border-radius: 8px;
-  border: 1px solid var(--border-subtle);
-  background: radial-gradient(circle at top, #020617 0, #020617 40%, #000 100%);
-  color: var(--text);
-  font-size: 14px;
+  border: 1px solid #374151;
+  padding: 8px 10px;
+  color: #e5e7eb;
+  font-size: 0.95rem;
+  outline: none;
 }
 
 .form-input::placeholder {
@@ -172,171 +152,123 @@
 }
 
 .form-input:focus {
-  outline: none;
-  border-color: var(--accent-soft);
-  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.4);
+  border-color: #facc15;
 }
 
-/* BUTTONS */
-
+/* BOTTONI */
 .btn {
-  padding: 8px 16px;
   border-radius: 999px;
   border: none;
-  font-size: 14px;
-  font-weight: 600;
   cursor: pointer;
+  padding: 7px 14px;
+  font-size: 0.9rem;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  background: rgba(15, 23, 42, 0.8);
-  color: var(--text);
-  border: 1px solid var(--border-subtle);
+  white-space: nowrap;
 }
 
-.btn:hover {
-  border-color: rgba(148, 163, 184, 0.7);
-  background: rgba(15, 23, 42, 1);
+.btn:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent-soft));
-  color: #1f2937;
-  border-color: transparent;
+  background: #facc15;
+  color: #111827;
 }
 
-.btn-primary:hover {
-  filter: brightness(1.05);
+.btn-primary:hover:not(:disabled) {
+  background: #eab308;
 }
 
-.btn-ghost {
-  background: transparent;
-  border-color: rgba(148, 163, 184, 0.5);
+.btn-secondary {
+  background: #111827;
+  color: #e5e7eb;
+  border: 1px solid #374151;
 }
 
-/* AUTH */
-
-.auth-card {
-  max-width: 420px;
-  margin: 0 auto;
+.btn-secondary:hover:not(:disabled) {
+  background: #1f2937;
 }
 
-/* MESSAGGI */
-
-.error-text {
-  color: var(--error);
-  font-size: 13px;
+.btn-danger {
+  background: #ef4444;
+  color: #f9fafb;
 }
 
-.success-text {
-  color: var(--success);
-  font-size: 13px;
+.btn-danger:hover:not(:disabled) {
+  background: #dc2626;
 }
 
-.muted-text {
-  color: var(--muted);
-  font-size: 13px;
-}
-
-/* GRID POKEMON */
-
+/* GRID CARTE */
 .pokemon-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 14px;
+  gap: 12px;
+  margin-top: 12px;
 }
 
 .pokemon-card {
-  background: linear-gradient(145deg, #020617, #020617);
-  border-radius: 16px;
+  background: #020617;
+  border-radius: 12px;
   border: 1px solid #1f2937;
-  padding: 10px 10px 12px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  position: relative;
-  overflow: hidden;
-}
-
-.pokemon-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.2;
-  background: radial-gradient(circle at -10% -10%, #facc15 0, transparent 60%);
-  pointer-events: none;
+  gap: 8px;
 }
 
 .pokemon-card-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
   gap: 8px;
 }
 
 .pokemon-card-title {
-  font-size: 15px;
-  margin: 0;
-}
-
-.pokemon-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 11px;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.5);
-  color: var(--muted);
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .pokemon-meta {
-  font-size: 12px;
-  color: var(--muted);
+  font-size: 0.8rem;
+  color: #9ca3af;
 }
 
 .pokemon-price {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--accent);
+  margin-top: 4px;
+  font-size: 0.9rem;
+  color: #facc15;
 }
 
+/* IMMAGINI */
 .pokemon-image-wrapper {
   margin-top: 6px;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid #1f2937;
-  background: radial-gradient(circle at top, #111827, #020617);
-}
-
-.pokemon-image {
-  width: 100%;
-  display: block;
-}
-
-/* DELETE BUTTON ICON */
-
-.icon-button {
-  border-radius: 999px;
-  width: 24px;
-  height: 24px;
-  border: 1px solid rgba(248, 113, 113, 0.6);
-  background: rgba(30, 41, 59, 0.9);
-  color: var(--error);
-  font-size: 14px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
+  display: flex;
   justify-content: center;
 }
 
-.icon-button:hover {
-  background: rgba(30, 41, 59, 1);
+.pokemon-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid #374151;
 }
 
-/* LOADING */
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .app-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
 
-.loading-text {
-  font-size: 13px;
-  color: var(--muted);
+  .app-header-left {
+    flex-wrap: wrap;
+  }
+
+  .app-main {
+    padding: 12px;
+  }
 }

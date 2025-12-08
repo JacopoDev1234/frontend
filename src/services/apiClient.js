@@ -1,48 +1,90 @@
+// src/services/apiClient.js
+
 const API_BASE = 'http://localhost:5000/api';
 
-function getToken() {
-  return localStorage.getItem('token');
-}
-
-async function request(path, options = {}) {
-  const token = getToken();
-
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  });
-
-  if (!res.ok) {
-    let errorBody;
-    try {
-      errorBody = await res.json();
-    } catch {
-      errorBody = await res.text();
-    }
-
-    const message =
-      (errorBody && errorBody.msg) ||
-      (typeof errorBody === 'string' ? errorBody : 'Errore API');
-
-    const err = new Error(message);
-    err.status = res.status;
-    throw err;
-  }
-
-  if (res.status === 204) return null;
-  return res.json();
+function getAuthHeaders() {
+  const token = localStorage.getItem('token');
+  if (!token) return {};
+  return {
+    Authorization: `Bearer ${token}`,
+  };
 }
 
 export const apiClient = {
-  get: (path) => request(path),
-  post: (path, body) =>
-    request(path, { method: 'POST', body: JSON.stringify(body) }),
-  put: (path, body) =>
-    request(path, { method: 'PUT', body: JSON.stringify(body) }),
-  delete: (path) => request(path, { method: 'DELETE' }),
-  getToken,
+  async get(path, { params } = {}) {
+    const url = new URL(API_BASE + path);
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          url.searchParams.append(key, String(value));
+        }
+      });
+    }
+
+    const res = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        ...getAuthHeaders(),
+      },
+    });
+
+    if (!res.ok) {
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        // ignore
+      }
+      const msg = data?.msg || `Errore GET ${path}`;
+      throw new Error(msg);
+    }
+
+    return res.json();
+  },
+
+  async post(path, body) {
+    const res = await fetch(API_BASE + path, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify(body || {}),
+    });
+
+    if (!res.ok) {
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        // ignore
+      }
+      const msg = data?.msg || `Errore POST ${path}`;
+      throw new Error(msg);
+    }
+
+    return res.json();
+  },
+
+  async delete(path) {
+    const res = await fetch(API_BASE + path, {
+      method: 'DELETE',
+      headers: {
+        ...getAuthHeaders(),
+      },
+    });
+
+    if (!res.ok) {
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        // ignore
+      }
+      const msg = data?.msg || `Errore DELETE ${path}`;
+      throw new Error(msg);
+    }
+
+    return res.json();
+  },
 };
