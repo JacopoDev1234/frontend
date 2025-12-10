@@ -2,11 +2,15 @@
 import React, { useEffect, useState } from 'react';
 import { pokemonService } from '../services/pokemonService';
 
+const ITEMS_PER_PAGE = 18;
+
 export default function Wallet() {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deletingId, setDeletingId] = useState(null);
+
+  const [page, setPage] = useState(1);
 
   const loadCards = async () => {
     setError('');
@@ -14,6 +18,7 @@ export default function Wallet() {
       setLoading(true);
       const data = await pokemonService.getMyCards();
       setCards(data || []);
+      setPage(1); // ogni volta che ricarico, torno a pagina 1
     } catch (err) {
       setError(err.message || 'Errore nel caricamento del wallet.');
     } finally {
@@ -33,7 +38,18 @@ export default function Wallet() {
     setDeletingId(id);
     try {
       await pokemonService.deleteCard(id);
-      setCards((prev) => prev.filter((c) => c.id !== id));
+      setCards((prev) => {
+        const updated = prev.filter((c) => c.id !== id);
+        // se la pagina corrente rimane senza elementi, torno indietro
+        const totalPages = Math.max(
+          1,
+          Math.ceil(updated.length / ITEMS_PER_PAGE)
+        );
+        if (page > totalPages) {
+          setPage(totalPages);
+        }
+        return updated;
+      });
     } catch (err) {
       alert(err.message || 'Errore nella cancellazione.');
     } finally {
@@ -49,6 +65,17 @@ export default function Wallet() {
     return sum + value;
   }, 0);
 
+  // calcolo pagine
+  const totalPages = Math.max(1, Math.ceil(cards.length / ITEMS_PER_PAGE));
+  const startIndex = (page - 1) * ITEMS_PER_PAGE;
+  const visibleCards = cards.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  const handleChangePage = (direction) => {
+    const nextPage = page + direction;
+    if (nextPage < 1 || nextPage > totalPages) return;
+    setPage(nextPage);
+  };
+
   return (
     <div className="page">
       <header className="page-header">
@@ -63,14 +90,17 @@ export default function Wallet() {
 
       {!loading && cards.length === 0 && !error && (
         <p className="muted-text">
-          Non hai ancora carte nel wallet. Vai nella pagina "Ricerca carte" e
+          Non hai ancora carte nel wallet. Vai nella pagina &quot;Ricerca carte&quot; e
           aggiungi le tue preferite!
         </p>
       )}
 
       {!loading && cards.length > 0 && (
         <>
-          <div className="section-card" style={{ marginBottom: 16, padding: 12 }}>
+          <div
+            className="section-card"
+            style={{ marginBottom: 16, padding: 12 }}
+          >
             <h3 className="section-title">Riepilogo</h3>
             <p className="section-description">
               Carte salvate: <strong>{cards.length}</strong>
@@ -84,7 +114,7 @@ export default function Wallet() {
           <div className="section-card" style={{ padding: 12 }}>
             <h3 className="section-title">Carte nel wallet</h3>
             <div className="pokemon-grid">
-              {cards.map((card) => (
+              {visibleCards.map((card) => (
                 <div key={card.id} className="pokemon-card">
                   <div className="pokemon-card-header">
                     <div>
@@ -145,6 +175,31 @@ export default function Wallet() {
                   </button>
                 </div>
               ))}
+            </div>
+
+            {/* PAGINAZIONE */}
+            <div className="pagination">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={page === 1}
+                onClick={() => handleChangePage(-1)}
+              >
+                ← Pagina precedente
+              </button>
+
+              <span className="pagination-info">
+                Pagina {page} di {totalPages}
+              </span>
+
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={page === totalPages}
+                onClick={() => handleChangePage(1)}
+              >
+                Pagina successiva →
+              </button>
             </div>
           </div>
         </>

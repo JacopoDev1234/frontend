@@ -80,6 +80,10 @@ export const POKEMON_SETS = [
   "Scarlet & Violet - Violet Expanse",
   "Scarlet & Violet - Paradox Rift",
   "Scarlet & Violet - Lost Zone",
-  // aggiungi altri se ti servono
+  'Black Bolt',
+  'White Flare',
+  'Phantasmal Flames',
+  'Mega Evolution',
+
 ];
 
